@@ -20,76 +20,74 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                script {
-                    sh '''
-                        echo "Installing Node.js dependencies..."
-                        npm install
-                        echo "Installing Newman and reporters locally..."
-                        npm install newman newman-reporter-html newman-reporter-htmlextra
-                    '''
-                }
+                sh '''
+                    echo "Node version:"
+                    node --version
+                    echo "NPM version:"
+                    npm --version
+                    echo "Installing Node.js dependencies..."
+                    npm install --no-optional
+                    echo "Installing Newman and reporters..."
+                    npm install --save-dev newman newman-reporter-html newman-reporter-htmlextra
+                    echo "Dependencies installed successfully"
+                '''
             }
         }
 
         stage('Generate Postman Collection') {
             steps {
-                script {
-                    sh '''
-                        echo "Generating Postman collection from build process..."
-                        mkdir -p ${BUILD_DIR}
-                        node generate-collection.js
-                        echo "Collection generated successfully"
-                        cat ${BUILD_DIR}/collection-metadata.json
-                    '''
-                }
+                sh '''
+                    echo "Generating Postman collection from build process..."
+                    mkdir -p ${BUILD_DIR}
+                    node generate-collection.js
+                    echo "Collection generated successfully"
+                    ls -la ${BUILD_DIR}/
+                    cat ${BUILD_DIR}/collection-metadata.json
+                '''
             }
         }
 
         stage('Run API Tests') {
             steps {
-                script {
-                    sh '''
-                        echo "Running Newman API tests with generated collection..."
-                        mkdir -p ${NEWMAN_REPORTS}
-                        npx newman run ${BUILD_DIR}/api-collection.json \
-                            --reporters cli,html,json \
-                            --reporter-html-export ${NEWMAN_REPORTS}/newman-report-${BUILD_NUMBER}.html \
-                            --reporter-json-export ${NEWMAN_REPORTS}/newman-report-${BUILD_NUMBER}.json \
-                            --delay-request 100 \
-                            --timeout-request 10000 \
-                            --color on
-                    '''
-                }
+                sh '''
+                    echo "Running Newman API tests with generated collection..."
+                    mkdir -p ${NEWMAN_REPORTS}
+                    npx newman run ${BUILD_DIR}/api-collection.json \
+                        --reporters cli,html,json \
+                        --reporter-html-export ${NEWMAN_REPORTS}/newman-report-${BUILD_NUMBER}.html \
+                        --reporter-json-export ${NEWMAN_REPORTS}/newman-report-${BUILD_NUMBER}.json \
+                        --delay-request 100 \
+                        --timeout-request 10000 \
+                        --bail
+                '''
             }
         }
 
         stage('Validate HTML Files') {
             steps {
-                script {
-                    sh '''
-                        echo "Validating HTML structure..."
-                        if [ -f index.html ]; then
-                            echo "✓ index.html exists"
-                        else
-                            echo "✗ index.html not found"
-                            exit 1
-                        fi
+                sh '''
+                    echo "Validating HTML structure..."
+                    if [ -f index.html ]; then
+                        echo "✓ index.html exists"
+                    else
+                        echo "✗ index.html not found"
+                        exit 1
+                    fi
 
-                        if [ -f tree.js ]; then
-                            echo "✓ tree.js exists"
-                        else
-                            echo "✗ tree.js not found"
-                            exit 1
-                        fi
+                    if [ -f tree.js ]; then
+                        echo "✓ tree.js exists"
+                    else
+                        echo "✗ tree.js not found"
+                        exit 1
+                    fi
 
-                        if [ -f styles.css ]; then
-                            echo "✓ styles.css exists"
-                        else
-                            echo "✗ styles.css not found"
-                            exit 1
-                        fi
-                    '''
-                }
+                    if [ -f styles.css ]; then
+                        echo "✓ styles.css exists"
+                    else
+                        echo "✗ styles.css not found"
+                        exit 1
+                    fi
+                '''
             }
         }
 
@@ -135,33 +133,19 @@ pipeline {
 
         stage('Archive Build Artifacts') {
             steps {
-                script {
-                    // Archive the generated Postman collection
-                    archiveArtifacts artifacts: "${BUILD_DIR}/api-collection.json", fingerprint: true
-                    archiveArtifacts artifacts: "${BUILD_DIR}/collection-metadata.json", fingerprint: true
+                // Archive the generated Postman collection
+                archiveArtifacts artifacts: "${BUILD_DIR}/api-collection.json", fingerprint: true
+                archiveArtifacts artifacts: "${BUILD_DIR}/collection-metadata.json", fingerprint: true
 
-                    // Archive Newman test reports
-                    archiveArtifacts artifacts: "${NEWMAN_REPORTS}/**/*", allowEmptyArchive: true
+                // Archive Newman test reports
+                archiveArtifacts artifacts: "${NEWMAN_REPORTS}/**/*", allowEmptyArchive: true
 
-                    // Publish HTML report (only if plugin is available)
-                    try {
-                        publishHTML([
-                            allowMissing: false,
-                            alwaysLinkToLastBuild: true,
-                            keepAll: true,
-                            reportDir: "${NEWMAN_REPORTS}",
-                            reportFiles: "newman-report-${BUILD_NUMBER}.html",
-                            reportName: 'Newman Test Report'
-                        ])
-                    } catch (Exception e) {
-                        echo "HTML Publisher plugin not available, reports archived as artifacts"
-                    }
-
+                sh '''
                     echo "Artifacts archived:"
                     echo "  - Postman Collection: ${BUILD_DIR}/api-collection.json"
                     echo "  - Collection Metadata: ${BUILD_DIR}/collection-metadata.json"
                     echo "  - Test Reports: ${NEWMAN_REPORTS}/"
-                }
+                '''
             }
         }
 
