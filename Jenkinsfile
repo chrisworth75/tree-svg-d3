@@ -26,9 +26,7 @@ pipeline {
                     echo "NPM version:"
                     npm --version
                     echo "Installing Node.js dependencies..."
-                    npm install --no-optional
-                    echo "Installing Newman and reporters..."
-                    npm install --save-dev newman newman-reporter-html newman-reporter-htmlextra
+                    npm install --legacy-peer-deps
                     echo "Dependencies installed successfully"
                 '''
             }
@@ -53,8 +51,8 @@ pipeline {
                     echo "Running Newman API tests with generated collection..."
                     mkdir -p ${NEWMAN_REPORTS}
                     npx newman run ${BUILD_DIR}/api-collection.json \
-                        --reporters cli,html,json \
-                        --reporter-html-export ${NEWMAN_REPORTS}/newman-report-${BUILD_NUMBER}.html \
+                        --reporters cli,htmlextra,json \
+                        --reporter-htmlextra-export ${NEWMAN_REPORTS}/newman-report-${BUILD_NUMBER}.html \
                         --reporter-json-export ${NEWMAN_REPORTS}/newman-report-${BUILD_NUMBER}.json \
                         --delay-request 100 \
                         --timeout-request 10000 \
