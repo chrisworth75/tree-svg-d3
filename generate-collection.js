@@ -55,17 +55,7 @@ const collection = {
                     request: {
                         method: "GET",
                         header: [],
-                        url: {
-                            raw: `${BASE_URL}/users?page=1`,
-                            host: BASE_URL.split('://')[1].split('/'),
-                            path: ["users"],
-                            query: [
-                                {
-                                    key: "page",
-                                    value: "1"
-                                }
-                            ]
-                        },
+                        url: `${BASE_URL}/users?page=1`,
                         description: "Retrieve a list of users with pagination"
                     },
                     response: []
