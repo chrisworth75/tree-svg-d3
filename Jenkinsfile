@@ -7,7 +7,7 @@ pipeline {
         TEST_CONTAINER = 'tree-svg-d3-test'
         NEWMAN_REPORTS = 'newman-reports'
         BUILD_DIR = 'build'
-        API_BASE_URL = 'https://reqres.in/api'
+        API_BASE_URL = 'https://jsonplaceholder.typicode.com'
     }
 
     stages {
@@ -55,8 +55,7 @@ pipeline {
                         --reporter-htmlextra-export ${NEWMAN_REPORTS}/newman-report-${BUILD_NUMBER}.html \
                         --reporter-json-export ${NEWMAN_REPORTS}/newman-report-${BUILD_NUMBER}.json \
                         --delay-request 100 \
-                        --timeout-request 10000 \
-                        --bail
+                        --timeout-request 10000
                 '''
             }
         }

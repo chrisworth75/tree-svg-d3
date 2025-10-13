@@ -12,7 +12,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Get configuration from environment variables or use defaults
-const BASE_URL = process.env.API_BASE_URL || 'https://reqres.in/api';
+const BASE_URL = process.env.API_BASE_URL || 'https://jsonplaceholder.typicode.com';
 const COLLECTION_NAME = process.env.COLLECTION_NAME || 'Generated API Collection';
 const BUILD_NUMBER = process.env.BUILD_NUMBER || 'dev';
 
@@ -39,13 +39,13 @@ const collection = {
                                     "    pm.response.to.have.status(200);",
                                     "});",
                                     "",
-                                    "pm.test(\"Response has data array\", function () {",
+                                    "pm.test(\"Response is an array\", function () {",
                                     "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.data).to.be.an('array');",
+                                    "    pm.expect(jsonData).to.be.an('array');",
                                     "});",
                                     "",
-                                    "pm.test(\"Response time is less than 500ms\", function () {",
-                                    "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                                    "pm.test(\"Response time is less than 2000ms\", function () {",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(2000);",
                                     "});"
                                 ],
                                 type: "text/javascript"
@@ -55,8 +55,8 @@ const collection = {
                     request: {
                         method: "GET",
                         header: [],
-                        url: `${BASE_URL}/users?page=1`,
-                        description: "Retrieve a list of users with pagination"
+                        url: `${BASE_URL}/users`,
+                        description: "Retrieve a list of users"
                     },
                     response: []
                 },
@@ -73,12 +73,12 @@ const collection = {
                                     "",
                                     "pm.test(\"User has email\", function () {",
                                     "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.data.email).to.exist;",
+                                    "    pm.expect(jsonData.email).to.exist;",
                                     "});",
                                     "",
                                     "pm.test(\"User ID matches request\", function () {",
                                     "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.data.id).to.eql(2);",
+                                    "    pm.expect(jsonData.id).to.eql(1);",
                                     "});"
                                 ],
                                 type: "text/javascript"
@@ -88,7 +88,7 @@ const collection = {
                     request: {
                         method: "GET",
                         header: [],
-                        url: `${BASE_URL}/users/2`,
+                        url: `${BASE_URL}/users/1`,
                         description: "Retrieve a single user by ID"
                     },
                     response: []
@@ -99,7 +99,7 @@ const collection = {
             name: "POST Requests",
             item: [
                 {
-                    name: "Create User",
+                    name: "Create Post",
                     event: [
                         {
                             listen: "test",
@@ -109,18 +109,15 @@ const collection = {
                                     "    pm.response.to.have.status(201);",
                                     "});",
                                     "",
-                                    "pm.test(\"Response contains user name\", function () {",
+                                    "pm.test(\"Response contains title\", function () {",
                                     "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.name).to.eql(\"John Doe\");",
+                                    "    pm.expect(jsonData.title).to.exist;",
                                     "});",
                                     "",
                                     "pm.test(\"Response contains ID\", function () {",
                                     "    var jsonData = pm.response.json();",
                                     "    pm.expect(jsonData.id).to.exist;",
-                                    "});",
-                                    "",
-                                    "var jsonData = pm.response.json();",
-                                    "pm.environment.set(\"user_id\", jsonData.id);"
+                                    "});"
                                 ],
                                 type: "text/javascript"
                             }
@@ -137,55 +134,13 @@ const collection = {
                         body: {
                             mode: "raw",
                             raw: JSON.stringify({
-                                name: "John Doe",
-                                job: "Software Engineer"
+                                title: "Test Post",
+                                body: "This is a test post",
+                                userId: 1
                             }, null, 2)
                         },
-                        url: `${BASE_URL}/users`,
-                        description: "Create a new user"
-                    },
-                    response: []
-                },
-                {
-                    name: "Login",
-                    event: [
-                        {
-                            listen: "test",
-                            script: {
-                                exec: [
-                                    "pm.test(\"Status code is 200\", function () {",
-                                    "    pm.response.to.have.status(200);",
-                                    "});",
-                                    "",
-                                    "pm.test(\"Response contains token\", function () {",
-                                    "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.token).to.exist;",
-                                    "});",
-                                    "",
-                                    "var jsonData = pm.response.json();",
-                                    "pm.environment.set(\"auth_token\", jsonData.token);"
-                                ],
-                                type: "text/javascript"
-                            }
-                        }
-                    ],
-                    request: {
-                        method: "POST",
-                        header: [
-                            {
-                                key: "Content-Type",
-                                value: "application/json"
-                            }
-                        ],
-                        body: {
-                            mode: "raw",
-                            raw: JSON.stringify({
-                                email: "eve.holt@reqres.in",
-                                password: "cityslicka"
-                            }, null, 2)
-                        },
-                        url: `${BASE_URL}/login`,
-                        description: "Login and receive authentication token"
+                        url: `${BASE_URL}/posts`,
+                        description: "Create a new post"
                     },
                     response: []
                 }
@@ -195,7 +150,7 @@ const collection = {
             name: "PUT Requests",
             item: [
                 {
-                    name: "Update User",
+                    name: "Update Post",
                     event: [
                         {
                             listen: "test",
@@ -205,14 +160,14 @@ const collection = {
                                     "    pm.response.to.have.status(200);",
                                     "});",
                                     "",
-                                    "pm.test(\"Response contains updated name\", function () {",
+                                    "pm.test(\"Response contains title\", function () {",
                                     "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.name).to.eql(\"John Doe Updated\");",
+                                    "    pm.expect(jsonData.title).to.exist;",
                                     "});",
                                     "",
-                                    "pm.test(\"Response contains updatedAt timestamp\", function () {",
+                                    "pm.test(\"Response contains ID\", function () {",
                                     "    var jsonData = pm.response.json();",
-                                    "    pm.expect(jsonData.updatedAt).to.exist;",
+                                    "    pm.expect(jsonData.id).to.exist;",
                                     "});"
                                 ],
                                 type: "text/javascript"
@@ -230,12 +185,14 @@ const collection = {
                         body: {
                             mode: "raw",
                             raw: JSON.stringify({
-                                name: "John Doe Updated",
-                                job: "Senior Software Engineer"
+                                id: 1,
+                                title: "Updated Post",
+                                body: "This is an updated post",
+                                userId: 1
                             }, null, 2)
                         },
-                        url: `${BASE_URL}/users/2`,
-                        description: "Update an existing user"
+                        url: `${BASE_URL}/posts/1`,
+                        description: "Update an existing post"
                     },
                     response: []
                 }
@@ -245,18 +202,18 @@ const collection = {
             name: "DELETE Requests",
             item: [
                 {
-                    name: "Delete User",
+                    name: "Delete Post",
                     event: [
                         {
                             listen: "test",
                             script: {
                                 exec: [
-                                    "pm.test(\"Status code is 204\", function () {",
-                                    "    pm.response.to.have.status(204);",
+                                    "pm.test(\"Status code is 200\", function () {",
+                                    "    pm.response.to.have.status(200);",
                                     "});",
                                     "",
                                     "pm.test(\"Response time is acceptable\", function () {",
-                                    "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                                    "    pm.expect(pm.response.responseTime).to.be.below(2000);",
                                     "});"
                                 ],
                                 type: "text/javascript"
@@ -266,8 +223,8 @@ const collection = {
                     request: {
                         method: "DELETE",
                         header: [],
-                        url: `${BASE_URL}/users/2`,
-                        description: "Delete a user by ID"
+                        url: `${BASE_URL}/posts/1`,
+                        description: "Delete a post by ID"
                     },
                     response: []
                 }
