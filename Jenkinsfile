@@ -24,8 +24,8 @@ pipeline {
                     sh '''
                         echo "Installing Node.js dependencies..."
                         npm install
-                        echo "Installing Newman globally..."
-                        npm install -g newman newman-reporter-html
+                        echo "Installing Newman and reporters locally..."
+                        npm install newman newman-reporter-html newman-reporter-htmlextra
                     '''
                 }
             }
@@ -51,7 +51,7 @@ pipeline {
                     sh '''
                         echo "Running Newman API tests with generated collection..."
                         mkdir -p ${NEWMAN_REPORTS}
-                        newman run ${BUILD_DIR}/api-collection.json \
+                        npx newman run ${BUILD_DIR}/api-collection.json \
                             --reporters cli,html,json \
                             --reporter-html-export ${NEWMAN_REPORTS}/newman-report-${BUILD_NUMBER}.html \
                             --reporter-json-export ${NEWMAN_REPORTS}/newman-report-${BUILD_NUMBER}.json \
@@ -143,15 +143,19 @@ pipeline {
                     // Archive Newman test reports
                     archiveArtifacts artifacts: "${NEWMAN_REPORTS}/**/*", allowEmptyArchive: true
 
-                    // Publish HTML report
-                    publishHTML([
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: "${NEWMAN_REPORTS}",
-                        reportFiles: "newman-report-${BUILD_NUMBER}.html",
-                        reportName: 'Newman Test Report'
-                    ])
+                    // Publish HTML report (only if plugin is available)
+                    try {
+                        publishHTML([
+                            allowMissing: false,
+                            alwaysLinkToLastBuild: true,
+                            keepAll: true,
+                            reportDir: "${NEWMAN_REPORTS}",
+                            reportFiles: "newman-report-${BUILD_NUMBER}.html",
+                            reportName: 'Newman Test Report'
+                        ])
+                    } catch (Exception e) {
+                        echo "HTML Publisher plugin not available, reports archived as artifacts"
+                    }
 
                     echo "Artifacts archived:"
                     echo "  - Postman Collection: ${BUILD_DIR}/api-collection.json"
