@@ -1,0 +1,29 @@
+{
+  "name": "tree-svg-d3",
+  "version": "1.0.0",
+  "description": "D3 Tree Visualization with Newman API Testing",
+  "main": "generate-collection.js",
+  "scripts": {
+    "build": "node generate-collection.js",
+    "build:dev": "API_BASE_URL=http://localhost:3000/api node generate-collection.js",
+    "build:prod": "API_BASE_URL=https://api.production.com node generate-collection.js",
+    "test:api": "npm run build && newman run build/api-collection.json --reporters cli,html --reporter-html-export newman-reports/newman-report.html",
+    "test:api:verbose": "npm run build && newman run build/api-collection.json --reporters cli,html,json --reporter-html-export newman-reports/newman-report.html --reporter-json-export newman-reports/newman-report.json --verbose",
+    "clean": "rm -rf build newman-reports"
+  },
+  "keywords": [
+    "d3",
+    "tree",
+    "visualization",
+    "postman",
+    "newman",
+    "api-testing",
+    "collection-generation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "newman": "^6.0.0",
+    "newman-reporter-html": "^1.0.5"
+  }
+}
