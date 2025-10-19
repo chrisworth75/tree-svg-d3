@@ -1,0 +1,66 @@
+// Minimal Jenkinsfile for debugging
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+                sh 'echo "Checkout successful"'
+            }
+        }
+
+        stage('Environment Check') {
+            steps {
+                sh '''
+                    echo "=== Environment Check ==="
+                    pwd
+                    ls -la
+                    echo "Node version:"
+                    node --version || echo "Node not found"
+                    echo "NPM version:"
+                    npm --version || echo "NPM not found"
+                    echo "========================="
+                '''
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                sh '''
+                    echo "Installing dependencies..."
+                    npm install
+                '''
+            }
+        }
+
+        stage('Generate Collection') {
+            steps {
+                sh '''
+                    echo "Generating collection..."
+                    mkdir -p build
+                    node generate-collection.js
+                    ls -la build/
+                '''
+            }
+        }
+
+        stage('Success') {
+            steps {
+                sh 'echo "Build completed successfully!"'
+            }
+        }
+    }
+
+    post {
+        failure {
+            sh '''
+                echo "Build failed!"
+                echo "Current directory:"
+                pwd
+                echo "Directory contents:"
+                ls -la
+            '''
+        }
+    }
+}

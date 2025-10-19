@@ -1,0 +1,46 @@
+meta {
+  name: Update User
+  type: http
+  seq: 1
+}
+
+put {
+  url: https://reqres.in/api/users/2
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+      "name": "John Doe Updated",
+      "job": "Senior Software Engineer"
+  }
+}
+
+script:post-response {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response contains updated name", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.name).to.eql("John Doe Updated");
+  });
+  
+  test("Response contains updatedAt timestamp", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.updatedAt).to.exist;
+  });
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Update an existing user
+}

@@ -1,0 +1,35 @@
+meta {
+  name: Get Single User
+  type: http
+  seq: 2
+}
+
+get {
+  url: https://reqres.in/api/users/2
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("User has email", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data.email).to.exist;
+  });
+  
+  test("User ID matches request", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data.id).to.eql(2);
+  });
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Retrieve a single user by ID
+}

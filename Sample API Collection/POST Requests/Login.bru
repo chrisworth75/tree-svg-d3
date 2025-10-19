@@ -1,0 +1,45 @@
+meta {
+  name: Login
+  type: http
+  seq: 2
+}
+
+post {
+  url: https://reqres.in/api/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+      "email": "eve.holt@reqres.in",
+      "password": "cityslicka"
+  }
+}
+
+script:post-response {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response contains token", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.token).to.exist;
+  });
+  
+  // Save token for authenticated requests
+  var jsonData = res.getBody();
+  bru.setEnvVar("auth_token", jsonData.token);
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Login and receive authentication token
+}

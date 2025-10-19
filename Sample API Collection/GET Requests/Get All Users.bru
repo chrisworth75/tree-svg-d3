@@ -1,0 +1,38 @@
+meta {
+  name: Get All Users
+  type: http
+  seq: 1
+}
+
+get {
+  url: https://reqres.in/api/users?page=1
+  body: none
+  auth: inherit
+}
+
+params:query {
+  page: 1
+}
+
+script:post-response {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response has data array", function () {
+      var jsonData = res.getBody();
+      expect(jsonData.data).to.be.an('array');
+  });
+  
+  test("Response time is less than 500ms", function () {
+      expect(res.getResponseTime()).to.be.below(500);
+  });
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Retrieve a list of users with pagination
+}

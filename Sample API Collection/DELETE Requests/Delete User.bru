@@ -1,0 +1,29 @@
+meta {
+  name: Delete User
+  type: http
+  seq: 1
+}
+
+delete {
+  url: https://reqres.in/api/users/2
+  body: none
+  auth: inherit
+}
+
+script:post-response {
+  test("Status code is 204", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+  
+  test("Response time is acceptable", function () {
+      expect(res.getResponseTime()).to.be.below(1000);
+  });
+}
+
+settings {
+  encodeUrl: true
+}
+
+docs {
+  Delete a user by ID
+}

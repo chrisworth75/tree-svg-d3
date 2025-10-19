@@ -1,0 +1,27 @@
+meta {
+  name: Sample API Collection
+}
+
+auth {
+  mode: none
+}
+
+vars:pre-request {
+  base_url: https://reqres.in/api
+}
+
+script:pre-request {
+  // Global pre-request script
+  console.log('Running request: ' + req.getName());
+}
+
+script:post-response {
+  // Global test script
+  test("Response has valid JSON", function () {
+  //     pm.response.to.be.json;
+  });
+}
+
+docs {
+  A sample Postman collection for Newman testing with various HTTP methods and test cases
+}
